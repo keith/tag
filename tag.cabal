@@ -30,4 +30,3 @@ executable tag
   build-depends:       base >= 4.7 && < 5
                      , process == 1.4.3.0
                      , regex-pcre == 0.94.4
-                     , tuple == 0.3.0.2
