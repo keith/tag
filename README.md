@@ -44,6 +44,22 @@ underlying tool to call, currently only `ag` is supported, and then pass
 any other arguments you'd like. Then tag will create a file at
 `/tmp/tag_aliases` that you need to source from your shell.
 
+## Installation
+
+On macOS:
+
+```sh
+$ brew install keith/formulae/tag
+```
+
+Building manually:
+
+Using [stack](https://docs.haskellstack.org/en/stable/README/):
+
+```sh
+$ stack install --local-bin-path /usr/local/bin
+```
+
 ## Credits
 
 This is inspired by [this project](https://github.com/aykamko/tag), I
