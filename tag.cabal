@@ -12,7 +12,7 @@ cabal-version:       >=1.10
 extra-source-files:  README.md
 
 executable tag
-  hs-source-dirs:      src
+  hs-source-dirs:      bin src
   main-is:             Main.hs
   other-modules:       Ag
                      , Alias
