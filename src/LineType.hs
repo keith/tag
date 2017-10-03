@@ -9,6 +9,13 @@ import Regex (getCaptureGroups)
 data LineType = Location Line Column | FilePath String | Other
   deriving (Show)
 
+instance Eq LineType where
+  (==) (Location line1 column1)
+       (Location line2 column2) = line1 == line2 && column1 == column2
+  (==) (FilePath path1) (FilePath path2) = path1 == path2
+  (==) Other Other = True
+  (==) _ _ = False
+
 getOutputType :: String -> LineType
 getOutputType line = fromMaybe Other
                                (msum $ map ($ line) [getLocation, getFilePath])
