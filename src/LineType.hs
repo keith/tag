@@ -23,7 +23,7 @@ getOutputType line = fromMaybe Other
 getLocation :: String -> Maybe LineType
 getLocation line =
   if length matches == 2 && length indexes == 2
-    then Just $ Location (Line $ head indexes) (Column $ indexes !! 1)
+    then Just $ Location (head indexes) (indexes !! 1)
     else Nothing
   where matches = getCaptureGroups line searchMatchRegex
         indexes = mapMaybe toNum matches

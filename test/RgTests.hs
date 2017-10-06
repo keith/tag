@@ -1,7 +1,6 @@
 module RgTests (allRgTests) where
 
 import Command
-import EditorPosition
 import LineType
 import Rg
 import Test.HUnit
@@ -22,7 +21,7 @@ testParsingRgSearchLine :: String -> Test
 testParsingRgSearchLine line = TestCase $
   assertEqual "Test rg search output line is parsed correctly"
   (getOutputType line)
-  (Location (Line 4) (Column 2))
+  (Location 4 2)
 
 allRgTests :: IO [Test]
 allRgTests = do
