@@ -1,14 +1,15 @@
 # tag
 
-Tag is a wrapper CLI for [`ag`][ag]. It parses the output and creates
-shell aliases to open vim at the locations of the searches.
+Tag is a wrapper CLI for [`ag`][ag] and [`rg`][rg]. It parses the output
+and creates shell aliases to open vim at the locations of the searches.
 
 ## Usage
 
-Tag is meant to be a transparent wrapper around `ag`, in order to make
-this work, you need to add a bit of configuration to your shell to
-auto-source the aliases after running a search. Here's some example
-configurations for common shells:
+Tag is meant to be a transparent wrapper around `ag` or `rg`, in order
+to make this work, you need to add a bit of configuration to your shell
+to auto-source the aliases after running a search. Here's some example
+configurations for common shells, replace `ag` with `rg` in these
+examples if you'd prefer.
 
 - `bash - ~/.bashrc`
 
@@ -66,3 +67,4 @@ This is inspired by [this project](https://github.com/aykamko/tag), I
 plan to expand it to work with more tools, such as find.
 
 [ag]: https://github.com/ggreer/the_silver_searcher/
+[rg]: https://github.com/BurntSushi/ripgrep

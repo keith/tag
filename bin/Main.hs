@@ -34,7 +34,7 @@ main = do
   args <- getArgs
 
   let commandOrError = maybeToEither
-                       "No argument passed\n\nUsage: tag [ag] ARGS"
+                       "No argument passed\n\nUsage: tag [ag|rg] ARGS"
                        (listToMaybe args) >>= commandFromString
   case commandOrError of
     Left string -> hPutStrLn stderr string >> exitWith (ExitFailure 1)
