@@ -15,7 +15,7 @@ examples if you'd prefer.
 
 ```bash
 if hash ag 2>/dev/null; then
-  tag() { command tag "$@" && source /tmp/tag_aliases 2>/dev/null; }
+  tag() { command tag "$@" && source /tmp/tag_aliases_$USER 2>/dev/null; }
   alias ag="tag ag"
 fi
 ```
@@ -24,7 +24,7 @@ fi
 
 ```zsh
 if (( $+commands[tag] )); then
-  tag() { command tag "$@" && source /tmp/tag_aliases 2>/dev/null }
+  tag() { command tag "$@" && source /tmp/tag_aliases_$USER 2>/dev/null }
   alias ag="tag ag"
 fi
 ```
@@ -33,7 +33,7 @@ fi
 
 ```fish
 function tag
-  command tag $argv; and source /tmp/tag_aliases ^/dev/null
+  command tag $argv; and source /tmp/tag_aliases_$USER ^/dev/null
   alias ag "tag ag"
 end
 ```
@@ -43,7 +43,7 @@ end
 In order for tag to work, you just need to call it passing the
 underlying tool to call, currently only `ag` is supported, and then pass
 any other arguments you'd like. Then tag will create a file at
-`/tmp/tag_aliases` that you need to source from your shell.
+`/tmp/tag_aliases_$USER` that you need to source from your shell.
 
 ## Installation
 
