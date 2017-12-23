@@ -11,13 +11,15 @@ import System.Environment (getArgs)
 import System.Exit (ExitCode(..), exitWith)
 import System.IO
 import System.Process (waitForProcess)
+import System.Posix.User (getLoginName)
 
 runCommand :: Command -> IO ExitCode
 runCommand command = do
   (hStdout, hStderr, proc) <- runCommandWithoutBlocking command
   hSetBinaryMode hStdout True
 
-  writeHandle <- openFile "/tmp/tag_aliases" WriteMode
+  userName <- getLoginName
+  writeHandle <- openFile ("/tmp/tag_aliases_" ++ userName) WriteMode
   processFileHandle (handleOutputLine writeHandle) hStdout Nothing
 
   exitCode <- waitForProcess proc

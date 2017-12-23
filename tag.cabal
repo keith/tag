@@ -38,6 +38,7 @@ executable tag
                      , process == 1.4.3.0
                      , regex-pcre == 0.94.4
                      , tag
+                     , unix >= 2.7 && < 3
 
 test-suite tag-test
   type:                exitcode-stdio-1.0
