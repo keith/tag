@@ -15,7 +15,7 @@ examples if you'd prefer.
 
 ```bash
 if hash ag 2>/dev/null; then
-  tag() { command tag "$@" && source /tmp/tag_aliases_$USER 2>/dev/null; }
+  tag() { command tag "$@" && source "/tmp/tag_aliases_$USER" 2>/dev/null; }
   alias ag="tag ag"
 fi
 ```
@@ -24,7 +24,7 @@ fi
 
 ```zsh
 if (( $+commands[tag] )); then
-  tag() { command tag "$@" && source /tmp/tag_aliases_$USER 2>/dev/null }
+  tag() { command tag "$@" && source "/tmp/tag_aliases_$USER" 2>/dev/null }
   alias ag="tag ag"
 fi
 ```
