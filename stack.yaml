@@ -1,4 +1,4 @@
 # https://docs.haskellstack.org/en/stable/yaml_configuration/
 resolver: lts-9.5
 ghc-options:
-  "$locals": -Wall
+  "*": -Wall
