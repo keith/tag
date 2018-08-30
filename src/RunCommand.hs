@@ -21,3 +21,18 @@ runCommandWithoutBlocking (Command exec args) = do
                                ((,) <$> mout <*> merr)
 
   return (hout, herr, process)
+
+-- This function takes a Command, and file handles to stdin, stdout, and stderr
+-- and executes the command, reusing the file handles for the process. This
+-- gives the child process complete control over how the data is read and
+-- written to these Handles.
+createProcessForCommand :: (Command, Handle, Handle, Handle) -> IO ProcessHandle
+createProcessForCommand (Command exec args, stdin, stdout, stderr) = do
+  (_, _, _, process) <-
+    createProcess (proc exec args){
+        std_in = UseHandle stdin
+      , std_out = UseHandle stdout
+      , std_err = UseHandle stderr
+    }
+
+  return process
