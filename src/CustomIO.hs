@@ -1,6 +1,13 @@
 module CustomIO where
 
-import System.IO (Handle, hIsEOF, hGetLine)
+import System.IO (Handle, hIsEOF, hIsTerminalDevice, hGetLine, stdin, stdout)
+
+-- Check if the current process is being piped to or from
+isRunningThroughPipes :: IO Bool
+isRunningThroughPipes = do
+  isStdinTerminal <- hIsTerminalDevice stdin
+  isStdOutTerminal <- hIsTerminalDevice stdout
+  return $ not isStdinTerminal || not isStdOutTerminal
 
 -- This function takes a function, a file handle, and a piece of context, and
 -- incrementally reads the file. With each line it passes the string to the
