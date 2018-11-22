@@ -3,7 +3,7 @@ module Parser (handleOutputLine) where
 import Alias (aliasForCommand, globalAliasForCommand)
 import Control.Monad (when)
 import LineType
-import System.IO (Handle, hPutStrLn)
+import System.IO (Handle, hPutStrLn, hFlush)
 import Vim (vimEditCommand)
 
 -- This function takes a output file handle, a line of output from the program
@@ -34,6 +34,7 @@ handleOutputLine writer shell line (Just (index, FilePath path)) = do
         $ hPutStrLn writer
           $ globalAliasForCommand index path
 
+      hFlush writer
       return $ Just (index + 1, FilePath path)
 handleOutputLine _ _ line (Just (index, _)) = do
   putStrLn line
