@@ -4,11 +4,8 @@ import Ag (agCommand)
 import Command
 import Rg (rgCommand)
 
-commandFromArguments :: [String] -> Command
-commandFromArguments args = Command (head args) (tail args)
-
-commandFromString :: String -> Either String ([String] -> Command)
-commandFromString string
-    | string == "ag" = Right agCommand
-    | string == "rg" = Right rgCommand
-    | otherwise = Left $ "'" ++ string ++ "' is not a supported command"
+commandFromString :: String -> [String] -> Either String Command
+commandFromString tool args
+    | tool == "ag" = Right $ agCommand args
+    | tool == "rg" = Right $ rgCommand args
+    | otherwise = Left $ "'" ++ tool ++ "' is not a supported command"

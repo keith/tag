@@ -1,6 +1,7 @@
 module Parser (handleOutputLine) where
 
-import Alias (aliasForCommand)
+import Alias (aliasForCommand, globalAliasForCommand)
+import Control.Monad (when)
 import LineType
 import System.IO (Handle, hPutStrLn)
 import Vim (vimEditCommand)
@@ -15,8 +16,8 @@ import Vim (vimEditCommand)
 -- the output file handle. Otherwise the line is just printed to the screen.
 -- This function does not handle if there are search matches before FilePath
 -- matches.
-handleOutputLine :: Handle -> String -> Maybe (Int, LineType) -> IO (Maybe (Int, LineType))
-handleOutputLine writer line (Just (index, FilePath path)) = do
+handleOutputLine :: Handle -> String -> String -> Maybe (Int, LineType) -> IO (Maybe (Int, LineType))
+handleOutputLine writer shell line (Just (index, FilePath path)) = do
   let output = getOutputType line
   case output of
     FilePath newPath -> do
@@ -29,11 +30,16 @@ handleOutputLine writer line (Just (index, FilePath path)) = do
       putStrLn $ formatLocationLine index line
       hPutStrLn writer
         $ aliasForCommand (index, vimEditCommand path (lnum, cnum))
+      putStrLn $ "checking zsh " ++ shell
+      when (shell == "zsh")
+        $ hPutStrLn writer
+          $ globalAliasForCommand (index, path)
+
       return $ Just (index + 1, FilePath path)
-handleOutputLine _ line (Just (index, _)) = do
+handleOutputLine _ _ line (Just (index, _)) = do
   putStrLn line
   return $ Just (index, getOutputType line)
-handleOutputLine _ line Nothing = do
+handleOutputLine _ _ line Nothing = do
   putStrLn line
   return $ Just (1, getOutputType line)
 

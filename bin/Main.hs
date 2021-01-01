@@ -1,26 +1,55 @@
 module Main where
 
 import Command
-import Commands (commandFromArguments, commandFromString)
+import Commands (commandFromString)
 import CustomIO (isRunningThroughPipes, processFileHandle)
-import Data.Maybe (listToMaybe)
-import EitherUtils (maybeToEither)
+import Data.List (isSuffixOf)
 import Parser (handleOutputLine)
 import RunCommand (createProcessForCommand, runCommandWithoutBlocking)
-import System.Environment (getArgs)
+import System.Console.ParseArgs
+import System.Environment (lookupEnv)
 import System.Exit (ExitCode(..), exitWith)
 import System.IO
-import System.Posix.User (getLoginName)
 import System.Process (waitForProcess)
 
-runCommand :: Command -> IO ExitCode
-runCommand command = do
+data Options =
+    AliasFile |
+    Tool
+    deriving (Ord, Eq, Show)
+
+argd :: [Arg Options]
+argd = [
+    Arg {
+      argIndex = AliasFile,
+      argName = Just "alias-file",
+      argAbbr = Nothing,
+      argData = argDataDefaulted "/tmp/tag_aliases" ArgtypeString "/tmp/tag_aliases",
+      argDesc = "The output file path containing the aliases"
+    },
+    Arg {
+      argIndex = Tool,
+      argName = Nothing,
+      argAbbr = Nothing,
+      argData = argDataRequired "tool" ArgtypeString,
+      argDesc = "[rg|ag]"
+    }
+  ]
+
+getShell :: IO String
+getShell = do
+ shell <- lookupEnv "SHELL"
+ return $ case shell of
+   Just path -> if "zsh" `isSuffixOf` path then "zsh" else "unknown"
+   Nothing -> "unknown"
+
+runFilterCommand :: String -> Command -> IO ExitCode
+runFilterCommand aliasFile command = do
   (hStdout, hStderr, proc) <- runCommandWithoutBlocking command
   hSetBinaryMode hStdout True
 
-  userName <- getLoginName
-  writeHandle <- openFile ("/tmp/tag_aliases_" ++ userName) WriteMode
-  processFileHandle (handleOutputLine writeHandle) hStdout Nothing
+  writeHandle <- openFile aliasFile WriteMode
+  shell <- getShell
+  processFileHandle (handleOutputLine writeHandle shell) hStdout Nothing
 
   exitCode <- waitForProcess proc
 
@@ -31,24 +60,18 @@ runCommand command = do
 
   return exitCode
 
-runFilterCommand :: [String] -> IO ExitCode
-runFilterCommand args = do
-  let commandOrError = maybeToEither
-                       "No argument passed\n\nUsage: tag [ag|rg] ARGS"
-                       (listToMaybe args) >>= commandFromString
-  case commandOrError of
-    Left string -> hPutStrLn stderr string >> exitWith (ExitFailure 1)
-    Right command -> runCommand $ command $ tail args
-
-runPassthroughCommand :: [String] -> IO ExitCode
-runPassthroughCommand args =
-  createProcessForCommand (commandFromArguments args, stdin, stdout, stderr)
+runPassthroughCommand :: Command -> IO ExitCode
+runPassthroughCommand command =
+  createProcessForCommand (command, stdin, stdout, stderr)
   >>= waitForProcess
 
 main :: IO ExitCode
 main = do
-  args <- getArgs
+  abc <- parseArgsIO (ArgsParseControl (ArgsTrailing "passthrough arguments") ArgsSoftDash) argd
+  command <- case commandFromString (getRequiredArg abc Tool) (argsRest abc) of
+    Left string -> hPutStrLn stderr string >> exitWith (ExitFailure 1)
+    Right command -> return command
   isPiped <- isRunningThroughPipes
   if isPiped
-    then runPassthroughCommand args
-    else runFilterCommand args
+    then runPassthroughCommand command
+    else runFilterCommand (getRequiredArg abc AliasFile) command
