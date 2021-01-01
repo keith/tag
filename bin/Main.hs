@@ -62,8 +62,7 @@ runFilterCommand aliasFile command = do
 
 runPassthroughCommand :: Command -> IO ExitCode
 runPassthroughCommand command =
-  createProcessForCommand (command, stdin, stdout, stderr)
-  >>= waitForProcess
+  createProcessForCommand command >>= waitForProcess
 
 main :: IO ExitCode
 main = do

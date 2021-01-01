@@ -2,7 +2,7 @@ module RunCommand where
 
 import Command
 import Data.Maybe (fromMaybe)
-import System.IO (Handle)
+import System.IO
 import System.Process
 
 -- This function takes a Command argument, and launches a new process with the
@@ -26,8 +26,8 @@ runCommandWithoutBlocking (Command exec args) = do
 -- and executes the command, reusing the file handles for the process. This
 -- gives the child process complete control over how the data is read and
 -- written to these Handles.
-createProcessForCommand :: (Command, Handle, Handle, Handle) -> IO ProcessHandle
-createProcessForCommand (Command exec args, stdin, stdout, stderr) = do
+createProcessForCommand :: Command -> IO ProcessHandle
+createProcessForCommand (Command exec args) = do
   (_, _, _, process) <-
     createProcess (proc exec args){
         std_in = UseHandle stdin
