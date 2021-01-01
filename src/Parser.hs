@@ -30,7 +30,6 @@ handleOutputLine writer shell line (Just (index, FilePath path)) = do
       putStrLn $ formatLocationLine index line
       hPutStrLn writer
         $ aliasForCommand (index, vimEditCommand path (lnum, cnum))
-      putStrLn $ "checking zsh " ++ shell
       when (shell == "zsh")
         $ hPutStrLn writer
           $ globalAliasForCommand (index, path)
