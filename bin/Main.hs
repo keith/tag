@@ -67,11 +67,11 @@ runPassthroughCommand command =
 
 main :: IO ExitCode
 main = do
-  abc <- parseArgsIO (ArgsParseControl (ArgsTrailing "passthrough arguments") ArgsSoftDash) argd
-  command <- case commandFromString (getRequiredArg abc Tool) (argsRest abc) of
+  args <- parseArgsIO (ArgsParseControl (ArgsTrailing "passthrough arguments") ArgsSoftDash) argd
+  command <- case commandFromString (getRequiredArg args Tool) (argsRest args) of
     Left string -> hPutStrLn stderr string >> exitWith (ExitFailure 1)
     Right command -> return command
   isPiped <- isRunningThroughPipes
   if isPiped
     then runPassthroughCommand command
-    else runFilterCommand (getRequiredArg abc AliasFile) command
+    else runFilterCommand (getRequiredArg args AliasFile) command
