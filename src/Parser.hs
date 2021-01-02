@@ -16,24 +16,27 @@ import Vim (vimEditCommand)
 -- the output file handle. Otherwise the line is just printed to the screen.
 -- This function does not handle if there are search matches before FilePath
 -- matches.
-handleOutputLine :: Handle -> String -> String -> Maybe (Int, LineType) -> IO (Maybe (Int, LineType))
-handleOutputLine writer shell line (Just (index, FilePath path)) = do
-  let output = getOutputType line
-  case output of
+handleOutputLine :: Handle -> String -> Bool -> String -> Maybe (Int, LineType) -> IO (Maybe (Int, LineType))
+handleOutputLine writer shell includeFiles line (Just (index, FilePath path)) = do
+  case getOutputType line of
     FilePath newPath -> do
-      putStrLn line
-      return $ Just (index, FilePath newPath)
+      if includeFiles then do
+        writeAlias writer shell line newPath index Nothing
+        return $ Just (index + 1, FilePath newPath)
+      else do
+        putStrLn line
+        return $ Just (index, FilePath newPath)
     Other -> do
       putStrLn line
       return $ Just (index, FilePath path)
     Location lnum cnum -> do
       writeAlias writer shell line path index $ Just (lnum, cnum)
       return $ Just (index + 1, FilePath path)
-handleOutputLine _ _ line (Just (index, _)) = do
+handleOutputLine _ _ _ line (Just (index, _)) = do
   putStrLn line
   return $ Just (index, getOutputType line)
-handleOutputLine writer shell line Nothing = do
-  handleOutputLine writer shell line $ Just (1, getOutputType line)
+handleOutputLine writer shell includeFiles line Nothing = do
+  handleOutputLine writer shell includeFiles line $ Just (1, getOutputType line)
 
 writeAlias :: Handle -> String -> String -> String -> Int -> Maybe (Int, Int) -> IO ()
 writeAlias writer shell line path index location = do

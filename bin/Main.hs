@@ -49,7 +49,7 @@ runFilterCommand aliasFile command = do
 
   writeHandle <- openFile aliasFile WriteMode
   shell <- getShell
-  processFileHandle (handleOutputLine writeHandle shell) hStdout Nothing
+  processFileHandle (handleOutputLine writeHandle shell (includeFiles command)) hStdout Nothing
 
   exitCode <- waitForProcess proc
 
