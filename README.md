@@ -1,9 +1,10 @@
 # tag
 
-Tag is a wrapper CLI for [`ag`][ag] and [`rg`][rg]. It parses the output
-and creates shell aliases to open vim at the locations of the searches.
+Tag is a wrapper CLI for [`ag`][ag], [`rg`][rg], `find`, and [`fd`][fd].
+It parses the output and creates shell aliases to open vim at the
+locations of the searches.
 
-## Example
+## Examples
 
 ```bash
 % rg foo
@@ -16,6 +17,14 @@ test/AgTests.hs
 [4] 12:16:  (agCommand ["foo"])
 
 % e1 # This opens test/RgTests.hs in vim at line 11 column 65
+```
+
+```bash
+% fd yaml
+[1] stack.yaml
+[2] stack.yaml.lock
+
+% e1 # This opens stack.yaml in vim
 ```
 
 ## Installation
@@ -36,22 +45,24 @@ $ stack install --local-bin-path /usr/local/bin
 
 ## Setup
 
-Tag is meant to be a transparent wrapper around `ag` or `rg`, in order
-to make this work, you need to add a bit of configuration to your shell
-to auto-source the aliases after running a search. Here's some example
-configurations for common shells, replace `ag` with `rg` in these
-examples if you'd prefer.
+Tag is meant to be a transparent wrapper around the underlying tools it
+calls, in order to make this work, you need to add a bit of
+configuration to your shell to auto-source the aliases after running a
+search. Here's some example configurations for common shells.
 
 - `bash - ~/.bashrc`
 
 ```bash
-if hash ag 2>/dev/null; then
+if hash tag 2>/dev/null; then
   tag() {
     trap 'source /tmp/tag_aliases 2>/dev/null' SIGINT
     command tag "$@" && source /tmp/tag_aliases 2>/dev/null
     trap - SIGINT
   }
   alias ag="tag ag"
+  alias fd="tag fd"
+  alias find="tag find"
+  alias rg="tag rg"
 fi
 ```
 
@@ -65,6 +76,9 @@ if (( $+commands[tag] )); then
     trap - SIGINT
   }
   alias ag="tag ag"
+  alias fd="tag fd"
+  alias find="tag find"
+  alias rg="tag rg"
 fi
 ```
 
@@ -77,15 +91,11 @@ to print the file containing the first match.
 function tag
   command tag $argv; and source /tmp/tag_aliases ^/dev/null
   alias ag "tag ag"
+  alias fd "tag fd"
+  alias find "tag find"
+  alias rg "tag rg"
 end
 ```
-
-- manual
-
-In order for tag to work, you just need to call it passing the
-underlying tool to call and then pass any other arguments you'd like.
-Then tag will create a file at `/tmp/tag_aliases` that you need to
-source from your shell.
 
 ## Configuration
 
@@ -97,5 +107,6 @@ You can customize the path tag writes the alias file to by passing
 This is inspired by [this project](https://github.com/aykamko/tag), I
 plan to expand it to work with more tools, such as find.
 
-[ag]: https://github.com/ggreer/the_silver_searcher/
+[ag]: https://github.com/ggreer/the_silver_searcher
+[fd]: https://github.com/sharkdp/fd
 [rg]: https://github.com/BurntSushi/ripgrep
