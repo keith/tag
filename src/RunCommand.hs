@@ -10,7 +10,7 @@ import System.Process
 -- stderr, along with the ProcessHandle. The in and out handles can be read
 -- immediately.
 runCommandWithoutBlocking :: Command -> IO (Handle, Handle, ProcessHandle)
-runCommandWithoutBlocking (Command exec args) = do
+runCommandWithoutBlocking (Command exec args _) = do
   (_, mout, merr, process) <-
     createProcess (proc exec args){
         std_out = CreatePipe
@@ -27,7 +27,7 @@ runCommandWithoutBlocking (Command exec args) = do
 -- gives the child process complete control over how the data is read and
 -- written to these Handles.
 createProcessForCommand :: Command -> IO ProcessHandle
-createProcessForCommand (Command exec args) = do
+createProcessForCommand (Command exec args _) = do
   (_, _, _, process) <-
     createProcess (proc exec args){
         std_in = UseHandle stdin

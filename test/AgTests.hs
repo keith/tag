@@ -8,7 +8,7 @@ import Test.HUnit
 testAgCommand :: Test
 testAgCommand = TestCase $
   assertEqual "Passed arguments are appended to Command"
-  (Command "ag" ["--group", "--color", "--column", "foo"])
+  (Command "ag" ["--group", "--color", "--column", "foo"] False)
   (agCommand ["foo"])
 
 testParsingAgFilePathOutput :: String -> Test

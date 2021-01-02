@@ -8,7 +8,7 @@ import Test.HUnit
 testRgCommand :: Test
 testRgCommand = TestCase $
   assertEqual "Passed arguments are appended to Command"
-  (Command "rg" ["--heading", "--color", "always", "--column", "foo"])
+  (Command "rg" ["--heading", "--color", "always", "--column", "foo"] False)
   (rgCommand ["foo"])
 
 testParsingRgFilePathOutput :: String -> Test
