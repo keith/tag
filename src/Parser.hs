@@ -29,7 +29,7 @@ handleOutputLine writer shell line (Just (index, FilePath path)) = do
     Location lnum cnum -> do
       putStrLn $ formatLocationLine index line
       hPutStrLn writer
-        $ aliasForCommand index (vimEditCommand path (lnum, cnum))
+        $ aliasForCommand index (vimEditCommand path $ Just (lnum, cnum))
       when (shell == "zsh")
         $ hPutStrLn writer
           $ globalAliasForCommand index path

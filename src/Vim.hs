@@ -2,7 +2,8 @@ module Vim where
 
 import EditorPosition
 
-vimEditCommand :: String -> (Line, Column) -> String
-vimEditCommand path (line, column) = "eval '$EDITOR "
+vimEditCommand :: String -> Maybe (Line, Column) -> String
+vimEditCommand path (Just (line, column)) = "eval '$EDITOR "
   ++ "\\\"" ++ path ++ "\\\""
   ++ " \\\"+call cursor(" ++ show line ++ ", " ++ show column ++ ")\\\"'"
+vimEditCommand path Nothing = "eval '$EDITOR " ++ "\\\"" ++ path ++ "\\\"'"
