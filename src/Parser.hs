@@ -27,20 +27,23 @@ handleOutputLine writer shell line (Just (index, FilePath path)) = do
       putStrLn line
       return $ Just (index, FilePath path)
     Location lnum cnum -> do
-      putStrLn $ formatLocationLine index line
-      hPutStrLn writer
-        $ aliasForCommand index (vimEditCommand path $ Just (lnum, cnum))
-      when (shell == "zsh")
-        $ hPutStrLn writer
-          $ globalAliasForCommand index path
-
-      hFlush writer
+      writeAlias writer shell line path index $ Just (lnum, cnum)
       return $ Just (index + 1, FilePath path)
 handleOutputLine _ _ line (Just (index, _)) = do
   putStrLn line
   return $ Just (index, getOutputType line)
 handleOutputLine writer shell line Nothing = do
   handleOutputLine writer shell line $ Just (1, getOutputType line)
+
+writeAlias :: Handle -> String -> String -> String -> Int -> Maybe (Int, Int) -> IO ()
+writeAlias writer shell line path index location = do
+  putStrLn $ formatLocationLine index line
+  hPutStrLn writer
+    $ aliasForCommand index (vimEditCommand path location)
+  when (shell == "zsh")
+    $ hPutStrLn writer
+      $ globalAliasForCommand index path
+  hFlush writer
 
 formatLocationLine :: Int -> String -> String
 formatLocationLine index line =
