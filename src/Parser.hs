@@ -39,9 +39,8 @@ handleOutputLine writer shell line (Just (index, FilePath path)) = do
 handleOutputLine _ _ line (Just (index, _)) = do
   putStrLn line
   return $ Just (index, getOutputType line)
-handleOutputLine _ _ line Nothing = do
-  putStrLn line
-  return $ Just (1, getOutputType line)
+handleOutputLine writer shell line Nothing = do
+  handleOutputLine writer shell line $ Just (1, getOutputType line)
 
 formatLocationLine :: Int -> String -> String
 formatLocationLine index line =
