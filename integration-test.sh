@@ -2,4 +2,6 @@
 
 set -euo pipefail
 
-diff -Nur <(rg --sort path foo) <(stack run -- rg --sort path foo | cat)
+diff -Nur \
+  <(find . -name "*.hs" | sort) \
+  <(stack run -- find . -name "*.hs" | sort)
