@@ -3,5 +3,5 @@
 set -euo pipefail
 
 diff -Nur \
-  <(find . -name "*.s" | sort) \
+  <(find . -name "*.hs" | sort) \
   <(stack run -- find . -name "*.hs" | sort)
