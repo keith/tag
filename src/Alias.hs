@@ -6,4 +6,4 @@ aliasForCommand index string =
 
 globalAliasForCommand :: Int -> String -> String
 globalAliasForCommand index string =
-  "alias -g f" ++ show index ++ "=\"" ++ string ++ "\""
+  "alias -g f" ++ show index ++ "=\"'" ++ string ++ "'\""
