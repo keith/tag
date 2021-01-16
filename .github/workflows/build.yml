@@ -14,4 +14,7 @@ jobs:
         with:
           ghc: 8.8.4
           enable-stack: true
-      - run: stack test
+      - name: test
+        run: |
+          stack test
+          ./integration-test.sh
