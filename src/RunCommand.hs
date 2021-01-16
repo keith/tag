@@ -28,11 +28,5 @@ runCommandWithoutBlocking (Command exec args _) = do
 -- written to these Handles.
 createProcessForCommand :: Command -> IO ProcessHandle
 createProcessForCommand (Command exec args _) = do
-  (_, _, _, process) <-
-    createProcess (proc exec args){
-        std_in = UseHandle stdin
-      , std_out = UseHandle stdout
-      , std_err = UseHandle stderr
-    }
-
+  (_, _, _, process) <- createProcess (proc exec args)
   return process
