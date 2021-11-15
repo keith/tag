@@ -1,3 +1,0 @@
-[1;32mLICENSE[0m[K
-[1;33m4[0m[K:2:t[30;43mhi[0m[Ks software and associated documentation files (the 'Software'), to deal in
-[1;33m10[0m[K:33:The above copyright notice and t[30;43mhi[0m[Ks permission notice shall be included in all
