@@ -1,20 +1,35 @@
 on: [push]
 name: build
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest]
-    name: ${{ matrix.os }} stack test
+  build-linux:
+    runs-on: ubuntu-latest
+    name: Linux
     steps:
       - uses: actions/checkout@v2
-      - name: Setup Haskell
-        uses: haskell/actions/setup@v1
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
         with:
-          ghc: 8.8.4
-          enable-stack: true
-      - name: test
+          version: "13.0"
+      - name: Build
+        env:
+          CC: clang
+          CXX: clang++
         run: |
-          stack test
-          ./integration-test.sh
+          cmake -B build
+          cmake --build build
+      - name: Test
+        run: ./integration-test.sh
+  build-macos:
+    runs-on: macOS-latest
+    name: macOS
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        env:
+          CC: clang
+          CXX: clang++
+        run: |
+          cmake -B build
+          cmake --build build
+      - name: Test
+        run: ./integration-test.sh

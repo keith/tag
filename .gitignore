@@ -1,3 +1,6 @@
+.cache
 .stack-work
+build
+compile_commands.json
 tag
 tag.tar.gz
