@@ -37,6 +37,12 @@ EOF
 if command -v rg; then
   SHELL=zsh ./build/tag rg foo
   diff -Nur "$expected" /tmp/tag_aliases
+
+  output=$(./build/tag rg tag README.md)
+  if [[ -z "$output" ]]; then
+    echo "error: missing output" >&2
+    exit 1
+  fi
 else
   echo "warning: rg isn't installed" >&2
 fi
