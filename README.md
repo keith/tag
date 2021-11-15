@@ -35,12 +35,12 @@ On macOS:
 $ brew install keith/formulae/tag
 ```
 
-Building manually:
-
-Using [stack](https://docs.haskellstack.org/en/stable/README/):
+Manually:
 
 ```sh
-$ stack install --local-bin-path /usr/local/bin
+cmake -B build
+cmake --build build
+cmake --install build
 ```
 
 ## Setup
@@ -105,7 +105,7 @@ You can customize the path tag writes the alias file to by passing
 ## Credits
 
 This is inspired by [this project](https://github.com/aykamko/tag), I
-plan to expand it to work with more tools, such as find.
+wanted to expand on it.
 
 [ag]: https://github.com/ggreer/the_silver_searcher
 [fd]: https://github.com/sharkdp/fd
