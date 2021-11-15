@@ -117,10 +117,12 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
   return cmd.run(args, [&](const std::string &line) {
     std::smatch match;
     if (std::regex_search(line, match, LINE_NUMBER_MATCH)) {
-      // TODO: can happen if file is specified to rg, ignore for now and do
-      // nothing
-      if (!currentFile.size())
+      // TODO: https://github.com/keith/tag/issues/24
+      if (!currentFile.size()) {
+        std::cout << line;
         return;
+      }
+
       let lnum = std::stoi(match.str(1));
       let col = std::stoi(match.str(2));
 
