@@ -9,6 +9,7 @@ diff -Nur \
 tmpfile=$(mktemp)
 expected=$(mktemp)
 cat <<EOF > "$expected"
+alias eall="eval '\$EDITOR -q \\"/tmp/tag_qf\\"'"
 alias e1="eval '\$EDITOR \\"./README.md\\"'"
 alias -g f1="./README.md"
 EOF
@@ -19,6 +20,7 @@ SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag find . -name "*.md"
 diff -Nur "$expected" /tmp/tag_aliases
 
 cat <<EOF > "$expected"
+alias eall="eval '\$EDITOR -q \\"/tmp/tag_qf\\"'"
 alias e1="eval '\$EDITOR \"README.md\" \"+call cursor(10, 6)\"'"
 alias -g f1="README.md"
 alias e2="eval '\$EDITOR \"README.md\" \"+call cursor(12, 75)\"'"
@@ -29,7 +31,7 @@ alias e4="eval '\$EDITOR \"README.md\" \"+call cursor(16, 63)\"'"
 alias -g f4="README.md"
 alias e5="eval '\$EDITOR \"README.md\" \"+call cursor(17, 26)\"'"
 alias -g f5="README.md"
-alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(37, 53)\"'"
+alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(39, 53)\"'"
 alias -g f6="integration-test.sh"
 EOF
 
@@ -80,5 +82,10 @@ fi
 
 if [[ "$output" != *"baz qux"* ]]; then
   echo "error: unexpected quoted find output: $output" >&2
+  exit 1
+fi
+
+SKIP_PIPE_FILTERING=true ./build/tag find . -name README.md > /dev/null
+if [[ "$(cat /tmp/tag_qf)" != *"README.md:1:1:"* ]]; then
   exit 1
 fi
