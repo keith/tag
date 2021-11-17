@@ -53,11 +53,19 @@ public:
       callback(line);
     free(line);
 
-    return pclose(pipe);
+    int status = pclose(pipe);
+    if (WIFEXITED(status))
+      return WEXITSTATUS(status);
+
+    return status;
   }
 
   [[nodiscard]] int runWithoutDefaultArgs(const std::string &args) const {
-    return std::system(this->commandWithoutDefaultArgs(args).c_str());
+    int status = std::system(this->commandWithoutDefaultArgs(args).c_str());
+    if (WIFEXITED(status))
+      return WEXITSTATUS(status);
+
+    return status;
   }
 };
 
@@ -206,8 +214,9 @@ int main(int argc, char *argv[]) {
     helpAndExit();
 
   std::stringstream joinedArgs;
-  for (auto arg : arguments)
-    joinedArgs << arg << " ";
+  for (auto arg : arguments) {
+    joinedArgs << '"' << arg << "\" ";
+  }
 
   let args = joinedArgs.str();
   let isPiped = !isatty(fileno(stdout));

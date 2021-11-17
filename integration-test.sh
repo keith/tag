@@ -54,3 +54,13 @@ if command -v rg; then
 else
   echo "warning: rg isn't installed" >&2
 fi
+
+if output=$(./build/tag find "baz qux" 2>&1); then
+  echo "error: find should have failed" >&2
+  exit 1
+fi
+
+if [[ "$output" != *"baz qux"* ]]; then
+  echo "error: unexpected quoted find output: $output" >&2
+  exit 1
+fi
