@@ -13,9 +13,9 @@ alias e1="eval '\$EDITOR \\"./README.md\\"'"
 alias -g f1="./README.md"
 EOF
 
-SHELL=zsh ./build/tag --alias-file "$tmpfile" find . -name "*.md"
+SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" find . -name "*.md"
 diff -Nur "$expected" "$tmpfile"
-SHELL=zsh ./build/tag find . -name "*.md"
+SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag find . -name "*.md"
 diff -Nur "$expected" /tmp/tag_aliases
 
 cat <<EOF > "$expected"
@@ -29,12 +29,12 @@ alias e4="eval '\$EDITOR \"README.md\" \"+call cursor(16, 63)\"'"
 alias -g f4="README.md"
 alias e5="eval '\$EDITOR \"README.md\" \"+call cursor(17, 26)\"'"
 alias -g f5="README.md"
-alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(37, 28)\"'"
+alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(37, 53)\"'"
 alias -g f6="integration-test.sh"
 EOF
 
 if command -v rg; then
-  SHELL=zsh ./build/tag rg foo --sort path
+  SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag rg foo --sort path
   diff -Nur "$expected" /tmp/tag_aliases
 
   output=$(./build/tag rg tag README.md)
