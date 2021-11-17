@@ -23,6 +23,10 @@ class Command {
     return cmd_ + " " + extraArgs_ + " " + args;
   }
 
+  [[nodiscard]] std::string commandWithoutDefaultArgs(const std::string &args) const {
+    return cmd_ + " " + args;
+  }
+
 public:
   Command(std::string cmd, const char *extraArgs)
       : cmd_(cmd), extraArgs_(extraArgs) {}
@@ -52,8 +56,8 @@ public:
     return pclose(pipe);
   }
 
-  [[nodiscard]] int run(const std::string &args) const {
-    return std::system(this->command(args).c_str());
+  [[nodiscard]] int runWithoutDefaultArgs(const std::string &args) const {
+    return std::system(this->commandWithoutDefaultArgs(args).c_str());
   }
 };
 
@@ -208,7 +212,7 @@ int main(int argc, char *argv[]) {
   let args = joinedArgs.str();
   let isPiped = !isatty(fileno(stdout));
   if (isPiped && std::getenv("SKIP_PIPE_FILTERING") == nullptr)
-    return command->run(args);
+    return command->runWithoutDefaultArgs(args);
 
   return runAndWriteFile(*command, argFile, args);
 }

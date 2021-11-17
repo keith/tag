@@ -13,7 +13,6 @@ alias e1="eval '\$EDITOR \\"./README.md\\"'"
 alias -g f1="./README.md"
 EOF
 
-export SKIP_PIPE_FILTERING=true
 SHELL=zsh ./build/tag --alias-file "$tmpfile" find . -name "*.md"
 diff -Nur "$expected" "$tmpfile"
 SHELL=zsh ./build/tag find . -name "*.md"
@@ -30,7 +29,7 @@ alias e4="eval '\$EDITOR \"README.md\" \"+call cursor(16, 63)\"'"
 alias -g f4="README.md"
 alias e5="eval '\$EDITOR \"README.md\" \"+call cursor(17, 26)\"'"
 alias -g f5="README.md"
-alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(38, 28)\"'"
+alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(37, 28)\"'"
 alias -g f6="integration-test.sh"
 EOF
 
@@ -41,6 +40,15 @@ if command -v rg; then
   output=$(./build/tag rg tag README.md)
   if [[ -z "$output" ]]; then
     echo "error: missing output" >&2
+    exit 1
+  fi
+
+  # Hack to make this not be caught by the grep
+  expected_file=README.md
+  expected_string="$expected_file:1:3:"
+  output=$(./build/tag rg tag)
+  if [[ "$output" != *"$expected_string"* ]]; then
+    echo "error: piped rg output not correctly formatted: $output" >&2
     exit 1
   fi
 else
