@@ -35,7 +35,7 @@ alias -g f6="integration-test.sh"
 EOF
 
 if command -v rg; then
-  SHELL=zsh ./build/tag rg foo
+  SHELL=zsh ./build/tag rg foo --sort path
   diff -Nur "$expected" /tmp/tag_aliases
 
   output=$(./build/tag rg tag README.md)
