@@ -51,6 +51,24 @@ if command -v rg; then
     echo "error: piped rg output not correctly formatted: $output" >&2
     exit 1
   fi
+
+  count=$(./build/tag rg '"rg"' | wc -l | xargs)
+  if [[ "$count" != 3 ]]; then
+    echo "error: unexpected result count: $count" >&2
+    exit 1
+  fi
+
+  count=$(./build/tag rg "\"rg\"" | wc -l | xargs)
+  if [[ "$count" != 3 ]]; then
+    echo "error: unexpected backslashed result count: $count" >&2
+    exit 1
+  fi
+
+  count=$(./build/tag rg \"rg\" | wc -l | xargs)
+  if [[ "$count" != 3 ]]; then
+    echo "error: unexpected non-quoted backslashed result count: $count" >&2
+    exit 1
+  fi
 else
   echo "warning: rg isn't installed" >&2
 fi

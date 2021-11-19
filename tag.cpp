@@ -1,5 +1,6 @@
 #include <array>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <optional>
 #include <regex>
@@ -23,7 +24,8 @@ class Command {
     return cmd_ + " " + extraArgs_ + " " + args;
   }
 
-  [[nodiscard]] std::string commandWithoutDefaultArgs(const std::string &args) const {
+  [[nodiscard]] std::string
+  commandWithoutDefaultArgs(const std::string &args) const {
     return cmd_ + " " + args;
   }
 
@@ -215,7 +217,7 @@ int main(int argc, char *argv[]) {
 
   std::stringstream joinedArgs;
   for (auto arg : arguments) {
-    joinedArgs << '"' << arg << "\" ";
+    joinedArgs << std::quoted(arg) << " ";
   }
 
   let args = joinedArgs.str();
