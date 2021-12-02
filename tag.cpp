@@ -11,10 +11,12 @@
 
 #define let const auto
 
+static const std::string QF_FILE("/tmp/tag_qf");
 static const std::regex FILE_REGEX("^(?:(?:\x1b\\[[^m]*m)+)?([^\x1b]+)");
 static const std::regex
     LINE_NUMBER_MATCH("^(?:(?:\x1b\\[[^m]*m)+)?(\\d+)(?:(?:\x1b\\[0?m(?:\x1b\\["
-                      "K)?)+)?:(?:\x1b\\[0?m)?(\\d+)(?:\x1b\\[0?m)?:");
+                      "K)?)+)?:(?:\x1b\\[0?m)?(\\d+)(?:\x1b\\[0?m)?:(.*)");
+const std::regex ANSI_REGEX("\x1b\\[[0-9;]*[mG]");
 
 class Command {
   const std::string cmd_;
@@ -97,8 +99,10 @@ static inline void rstrip(std::string &s) {
 // FIXME: cleanup somehow
 [[nodiscard]] static std::string
 vimEditCommand(const std::string &path,
-               std::optional<std::pair<int, int>> location) {
-  const std::string prefix = "eval '$EDITOR \\\"" + path + "\\\"";
+               std::optional<std::pair<int, int>> location,
+               const std::string &vimArgs = "") {
+  const std::string prefix =
+      "eval '$EDITOR " + vimArgs + "\\\"" + path + "\\\"";
   if (location) {
     let line = std::to_string(std::get<0>(*location));
     let col = std::to_string(std::get<1>(*location));
@@ -108,9 +112,14 @@ vimEditCommand(const std::string &path,
   return prefix + "'";
 }
 
+[[nodiscard]] static std::string aliasForCommand(const std::string index,
+                                                 const std::string &command) {
+  return "alias e" + index + "=\"" + command + "\"";
+}
+
 [[nodiscard]] static std::string aliasForCommand(int index,
                                                  const std::string &command) {
-  return "alias e" + std::to_string(index) + "=\"" + command + "\"";
+  return aliasForCommand(std::to_string(index), command);
 }
 
 [[nodiscard]] static std::string
@@ -122,11 +131,30 @@ static void printAliasedLine(int index, std::string line) {
   std::cout << "[\x1b[0;31m" << index << "\x1b[0m] " << line;
 }
 
+[[nodiscard]] static std::string stripAnsi(const std::string line) {
+  std::stringstream result;
+  std::regex_replace(std::ostream_iterator<char>(result), line.begin(),
+                     line.end(), ANSI_REGEX, "");
+
+  return result.str();
+}
+
+[[nodiscard]] static std::string formatQFLine(const std::string &path, int lnum,
+                                              int col,
+                                              const std::string line = "") {
+  return path + ":" + std::to_string(lnum) + ":" + std::to_string(col) + ":" +
+         line;
+}
+
 [[nodiscard]] static int
 runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
   std::string currentFile;
   int aliasIndex = 1;
   std::ofstream os(outputFile);
+  std::ofstream qfOS(QF_FILE);
+
+  os << aliasForCommand("all", vimEditCommand(QF_FILE, std::nullopt, "-q "))
+     << std::endl;
 
   return cmd.run(args, [&](const std::string &line) {
     std::smatch match;
@@ -139,6 +167,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
 
       let lnum = std::stoi(match.str(1));
       let col = std::stoi(match.str(2));
+      let leftover = stripAnsi(match.str(3));
 
       let editCmd = vimEditCommand(currentFile, std::make_pair(lnum, col));
       os << aliasForCommand(aliasIndex, editCmd) << std::endl;
@@ -146,12 +175,15 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
         os << globalAliasForCommand(aliasIndex, currentFile) << std::endl;
       }
 
+      qfOS << formatQFLine(currentFile, lnum, col, leftover) << std::endl;
+
       printAliasedLine(aliasIndex, line);
       ++aliasIndex;
     } else if (std::regex_search(line, match, FILE_REGEX)) {
       currentFile = match.str(1);
       rstrip(currentFile);
       if (cmd.includeFiles()) {
+        qfOS << formatQFLine(currentFile, 1, 1, "") << std::endl;
         printAliasedLine(aliasIndex, line);
 
         let editCmd = vimEditCommand(currentFile, std::nullopt);
