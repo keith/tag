@@ -60,6 +60,8 @@ public:
     int status = pclose(pipe);
     if (WIFEXITED(status))
       return WEXITSTATUS(status);
+    if (WIFSIGNALED(status))
+      return WTERMSIG(status);
 
     return status;
   }
