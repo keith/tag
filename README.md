@@ -44,12 +44,11 @@ let
       owner = "keith";
       repo = "tag";
       rev = "0.8.0";
-      sha256 = "sha256-0000000000000000000000000000000000000000000=";
+      sha256 = "132k8wh7x2y61j9j3lk646wp2dp9jakx0inc7hcbgy8li2kb03sm";
     })
     { inherit pkgs; };
 in
   # Use `tag` from here on as a derivation.
-  # you'll need to update the sha256 yourself.
 ```
 
 Manually:
