@@ -1,6 +1,15 @@
 on: [push]
 name: build
 jobs:
+  build-nix:
+    runs-on: ubuntu-latest
+    name: Nix
+    steps:
+    - uses: actions/checkout@v2.4.0
+    - uses: cachix/install-nix-action@v15
+      with:
+        nix_path: nixpkgs=channel:nixos-unstable
+    - run: nix-build
   build-linux:
     runs-on: ubuntu-latest
     name: Linux

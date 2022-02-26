@@ -35,6 +35,23 @@ On macOS:
 $ brew install keith/formulae/tag
 ```
 
+With Nix/NixOS:
+
+```nix
+let
+  tag = import
+    (pkgs.fetchFromGitHub {
+      owner = "keith";
+      repo = "tag";
+      rev = "0.8.0";
+      sha256 = "sha256-0000000000000000000000000000000000000000000=";
+    })
+    { inherit pkgs; };
+in
+  # Use `tag` from here on as a derivation.
+  # you'll need to update the sha256 yourself.
+```
+
 Manually:
 
 ```sh
