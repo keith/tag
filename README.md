@@ -89,7 +89,7 @@ to print the file containing the first match.
 
 ```fish
 function tag
-  command tag $argv; and source /tmp/tag_aliases ^/dev/null
+  command tag $argv; and source /tmp/tag_aliases &> /dev/null
   alias ag "tag ag"
   alias fd "tag fd"
   alias find "tag find"
