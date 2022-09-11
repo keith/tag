@@ -19,6 +19,7 @@ static const std::regex
 const std::regex ANSI_REGEX("\x1b\\[[0-9;]*[mG]");
 
 class Command {
+  const std::string cmd_id_;
   const std::string cmd_;
   const std::string extraArgs_ = "";
   const bool includeFiles_ = false;
@@ -33,12 +34,15 @@ class Command {
 
 public:
   Command(std::string cmd, const char *extraArgs)
-      : cmd_(cmd), extraArgs_(extraArgs) {}
+      : cmd_id_(cmd), cmd_(cmd), extraArgs_(extraArgs) {}
 
   Command(std::string cmd, bool includeFiles)
-      : cmd_(cmd), includeFiles_(includeFiles) {}
+      : cmd_id_(cmd), cmd_(cmd), includeFiles_(includeFiles) {}
 
-  std::string cmd() const { return cmd_; }
+  Command(std::string cmd_id, std::string cmd, bool includeFiles)
+      : cmd_id_(cmd_id), cmd_(cmd), includeFiles_(includeFiles) {}
+
+  std::string cmd_id() const { return cmd_id_; }
   bool includeFiles() const { return includeFiles_; }
 
   [[nodiscard]] int
@@ -81,6 +85,7 @@ static const std::array COMMANDS{
     Command("fd", true),
     Command("fdfind", true),
     Command("find", true),
+    Command("git-status", "git -c color.status=always status -sb", true),
 };
 
 [[nodiscard]] static bool isZSH() {
@@ -181,6 +186,26 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
 
       printAliasedLine(aliasIndex, line);
       ++aliasIndex;
+    } else if (cmd.cmd_id() == "git-status") {
+      if (line.starts_with("##")) {
+        std::cout << line;
+        return;
+      }
+
+      // TODO: Doesn't handle renames or moves
+      std::string path = stripAnsi(line).substr(3);
+      rstrip(path);
+
+      qfOS << formatQFLine(path, 1, 1, "") << std::endl;
+      printAliasedLine(aliasIndex, line);
+
+      let editCmd = vimEditCommand(path, std::nullopt);
+      os << aliasForCommand(aliasIndex, editCmd) << std::endl;
+      if (isZSH()) {
+        os << globalAliasForCommand(aliasIndex, path) << std::endl;
+      }
+
+      ++aliasIndex;
     } else if (std::regex_search(line, match, FILE_REGEX)) {
       currentFile = match.str(1);
       rstrip(currentFile);
@@ -211,7 +236,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
   std::stringstream cmdNames;
   cmdNames << "[";
   for (auto cmd : COMMANDS)
-    cmdNames << cmd.cmd() << "|";
+    cmdNames << cmd.cmd_id() << "|";
 
   cmdNames.seekp(-1, cmdNames.cur);
   cmdNames << ']';
@@ -243,8 +268,9 @@ int main(int argc, char *argv[]) {
 
   let cmdString = popFirst(arguments);
   let *command =
-      std::find_if(COMMANDS.begin(), COMMANDS.end(),
-                   [&cmdString](auto &cmd) { return cmdString == cmd.cmd(); });
+      std::find_if(COMMANDS.begin(), COMMANDS.end(), [&cmdString](auto &cmd) {
+        return cmdString == cmd.cmd_id();
+      });
 
   if (command == COMMANDS.end())
     helpAndExit();
