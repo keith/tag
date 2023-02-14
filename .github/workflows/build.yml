@@ -9,11 +9,22 @@ jobs:
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "13.0"
+          version: "15.0"
       - name: Build
         env:
           CC: clang
           CXX: clang++
+        run: |
+          cmake -B build
+          cmake --build build
+      - name: Test
+        run: ./integration-test.sh
+  build-linux-gcc:
+    runs-on: ubuntu-latest
+    name: Linux GCC
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
         run: |
           cmake -B build
           cmake --build build
