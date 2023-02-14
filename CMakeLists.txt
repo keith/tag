@@ -17,11 +17,21 @@ target_compile_options(
   tag
   PRIVATE
   -g
-  -Weverything
-  -Wno-c++98-compat
-  -Wno-exit-time-destructors
-  -Wno-global-constructors
-  -Wno-padded
+  -Wall
+  -Wextra
   -fno-exceptions
 )
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  target_compile_options(
+    tag
+    PRIVATE
+    -Weverything
+    -Wno-c++98-compat
+    -Wno-exit-time-destructors
+    -Wno-global-constructors
+    -Wno-padded
+  )
+endif()
+
 install(TARGETS tag)
