@@ -8,7 +8,6 @@
 #include <sstream>
 #include <unistd.h>
 #include <utility>
-#include <vector>
 
 #define let const auto
 
@@ -86,6 +85,7 @@ static const std::array COMMANDS{
     Command("fd", true),
     Command("fdfind", true),
     Command("find", true),
+    Command("ls", true),
     Command("git-status", "git -c color.status=always status -sb", true),
 };
 
@@ -102,6 +102,12 @@ static inline void rstrip(std::string &s) {
                        [](unsigned char ch) { return !std::isspace(ch); })
               .base(),
           s.end());
+}
+
+static inline void stripLsClassifier(std::string &line) {
+  if (line.find_last_of("*@=%|") == line.size() - 1) {
+    line.pop_back();
+  }
 }
 
 // FIXME: cleanup somehow
@@ -204,6 +210,30 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
       os << aliasForCommand(aliasIndex, editCmd) << std::endl;
       if (isZSH()) {
         os << globalAliasForCommand(aliasIndex, path) << std::endl;
+      }
+
+      ++aliasIndex;
+    } else if (cmd.cmd_id() == "ls") {
+      if (aliasIndex == 1 && line.starts_with("total")) {
+        // ls -l shows a total first
+        // probably broken if there's only 1 file called "total"
+        std::cout << line;
+        return;
+      }
+
+      std::string file = stripAnsi(line);
+      rstrip(file);
+      stripLsClassifier(file);
+
+      file = file.substr(file.find_last_of(' ') + 1);
+
+      qfOS << formatQFLine(file, 1, 1, "") << std::endl;
+      printAliasedLine(aliasIndex, line);
+
+      let editCmd = vimEditCommand(file, std::nullopt);
+      os << aliasForCommand(aliasIndex, editCmd) << std::endl;
+      if (isZSH()) {
+        os << globalAliasForCommand(aliasIndex, file) << std::endl;
       }
 
       ++aliasIndex;
