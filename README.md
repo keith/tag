@@ -1,4 +1,5 @@
 # tag
+fdsf
 
 Tag is a wrapper CLI for [`ag`][ag], [`rg`][rg], `find`, and [`fd`][fd].
 It parses the output and creates shell aliases to open vim at the
