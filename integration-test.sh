@@ -19,6 +19,19 @@ diff -Nur "$expected" "$tmpfile"
 SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag find . -name "*.md"
 diff -Nur "$expected" /tmp/tag_aliases
 
+SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" ls LICENSE README.md
+cat <<EOF > "$expected"
+alias eall="eval '\$EDITOR -q \"/tmp/tag_qf\"'"
+alias e1="eval '\$EDITOR \"LICENSE\"'"
+alias -g f1="LICENSE"
+alias e2="eval '\$EDITOR \"README.md\"'"
+alias -g f2="README.md"
+EOF
+
+diff -Nur "$expected" "$tmpfile"
+SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" ls -l LICENSE README.md
+diff -Nur "$expected" "$tmpfile"
+
 cat <<EOF > "$expected"
 alias eall="eval '\$EDITOR -q \\"/tmp/tag_qf\\"'"
 alias e1="eval '\$EDITOR \"README.md\" \"+call cursor(10, 6)\"'"
@@ -31,7 +44,7 @@ alias e4="eval '\$EDITOR \"README.md\" \"+call cursor(16, 63)\"'"
 alias -g f4="README.md"
 alias e5="eval '\$EDITOR \"README.md\" \"+call cursor(17, 26)\"'"
 alias -g f5="README.md"
-alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(39, 53)\"'"
+alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(52, 53)\"'"
 alias -g f6="integration-test.sh"
 EOF
 
