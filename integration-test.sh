@@ -6,6 +6,11 @@ diff -Nur \
   <(find . | sort) \
   <(./build/tag find . | sort)
 
+if ./build/tag </dev/null 2>/dev/null; then
+  echo "error: tag without arguments should fail without piped input" >&2
+  exit 1
+fi
+
 tmpfile=$(mktemp)
 expected=$(mktemp)
 cat <<EOF > "$expected"
@@ -18,6 +23,17 @@ SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" find . -n
 diff -Nur "$expected" "$tmpfile"
 SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag find . -name "*.md"
 diff -Nur "$expected" /tmp/tag_aliases
+
+cat <<'EOF' > "$expected"
+alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
+alias e1="eval '$EDITOR \"README.md\"'"
+alias -g f1="README.md"
+alias e2="eval '$EDITOR \"tag.cpp\"'"
+alias -g f2="tag.cpp"
+EOF
+
+printf 'README.md\ntag.cpp\n' | SHELL=zsh ./build/tag --alias-file "$tmpfile" > /dev/null
+diff -Nur "$expected" "$tmpfile"
 
 SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" ls LICENSE README.md
 cat <<EOF > "$expected"
@@ -44,7 +60,7 @@ alias e4="eval '\$EDITOR \"README.md\" \"+call cursor(16, 63)\"'"
 alias -g f4="README.md"
 alias e5="eval '\$EDITOR \"README.md\" \"+call cursor(17, 26)\"'"
 alias -g f5="README.md"
-alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(52, 53)\"'"
+alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(68, 53)\"'"
 alias -g f6="integration-test.sh"
 EOF
 
