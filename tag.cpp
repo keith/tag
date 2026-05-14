@@ -80,7 +80,7 @@ public:
 };
 
 static const std::array COMMANDS{
-    Command("rg", "--heading --color always --column"),
+    Command("rg", "--heading --color always --column --with-filename"),
     Command("ag", "--group --color --column"),
     Command("fd", true),
     Command("fdfind", true),

@@ -74,6 +74,12 @@ if command -v rg; then
     exit 1
   fi
 
+  SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" rg tag README.md > /dev/null
+  if ! grep -Fq 'README.md\" \"+call cursor(1, 3)' "$tmpfile"; then
+    echo "error: single-file rg output did not create a README.md alias" >&2
+    exit 1
+  fi
+
   # Hack to make this not be caught by the grep
   expected_file=README.md
   expected_string="$expected_file:1:3:"
