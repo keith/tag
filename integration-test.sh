@@ -118,3 +118,28 @@ SKIP_PIPE_FILTERING=true ./build/tag find . -name README.md > /dev/null
 if [[ "$(cat /tmp/tag_qf)" != *"README.md:1:1:"* ]]; then
   exit 1
 fi
+
+repo_root=$(pwd)
+git_tmp=$(mktemp -d)
+(
+  cd "$git_tmp"
+  git init -q
+  git config user.email tag@example.com
+  git config user.name tag
+  git config commit.gpgsign false
+  old_path=$(printf 'f%s' oo)
+  printf content > "$old_path"
+  git add "$old_path"
+  git commit -qm init 2>/dev/null
+  git mv "$old_path" bar
+
+  SKIP_PIPE_FILTERING=true SHELL=zsh "$repo_root/build/tag" --alias-file "$tmpfile" git-status --renames > /dev/null 2>/dev/null
+)
+
+cat <<'EOF' > "$expected"
+alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
+alias e1="eval '$EDITOR \"bar\"'"
+alias -g f1="bar"
+EOF
+
+diff -Nur "$expected" "$tmpfile"
