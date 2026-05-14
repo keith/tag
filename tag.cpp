@@ -263,6 +263,42 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
   });
 }
 
+[[nodiscard]] static int runStdinAndWriteFile(std::string outputFile) {
+  int aliasIndex = 1;
+  std::ofstream os(outputFile);
+  std::ofstream qfOS(QF_FILE);
+
+  os << aliasForCommand("all", vimEditCommand(QF_FILE, std::nullopt, "-q "))
+     << std::endl;
+
+  std::string line;
+  while (std::getline(std::cin, line)) {
+    std::string path = stripAnsi(line);
+    rstrip(path);
+    if (path.empty()) {
+      std::cout << line << std::endl;
+      continue;
+    }
+
+    qfOS << formatQFLine(path, 1, 1, "") << std::endl;
+    printAliasedLine(aliasIndex, line + "\n");
+
+    let editCmd = vimEditCommand(path, std::nullopt);
+    os << aliasForCommand(aliasIndex, editCmd) << std::endl;
+    if (isZSH()) {
+      os << globalAliasForCommand(aliasIndex, path) << std::endl;
+    }
+
+    ++aliasIndex;
+    os.flush();
+  }
+
+  if (std::cin.bad())
+    return 1;
+
+  return 0;
+}
+
 [[noreturn]] static void helpAndExit() {
   std::stringstream cmdNames;
   cmdNames << "[";
@@ -288,13 +324,19 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
 
 int main(int argc, char *argv[]) {
   std::deque<std::string> arguments(argv + 1, argv + argc);
-  if (arguments.empty())
-    helpAndExit();
 
   std::string argFile("/tmp/tag_aliases");
-  if (arguments.front() == "--alias-file") {
+  if (!arguments.empty() && arguments.front() == "--alias-file") {
     arguments.pop_front();
     argFile = popFirst(arguments);
+  }
+
+  if (arguments.empty()) {
+    if (!isatty(fileno(stdin)) &&
+        std::cin.peek() != std::char_traits<char>::eof())
+      return runStdinAndWriteFile(argFile);
+
+    helpAndExit();
   }
 
   let cmdString = popFirst(arguments);
