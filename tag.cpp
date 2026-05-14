@@ -110,6 +110,18 @@ static inline void stripLsClassifier(std::string &line) {
   }
 }
 
+[[nodiscard]] static std::string parseGitStatusPath(std::string path) {
+  static const std::string separator(" -> ");
+  rstrip(path);
+
+  let renameSeparator = path.find(separator);
+  if (renameSeparator != std::string::npos) {
+    path = path.substr(renameSeparator + separator.size());
+  }
+
+  return path;
+}
+
 // FIXME: cleanup somehow
 [[nodiscard]] static std::string
 vimEditCommand(const std::string &path,
@@ -199,9 +211,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
         return;
       }
 
-      // TODO: Doesn't handle renames or moves
-      std::string path = stripAnsi(line).substr(3);
-      rstrip(path);
+      std::string path = parseGitStatusPath(stripAnsi(line).substr(3));
 
       qfOS << formatQFLine(path, 1, 1, "") << std::endl;
       printAliasedLine(aliasIndex, line);
