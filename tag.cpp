@@ -1,4 +1,5 @@
 #include <array>
+#include <cctype>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -110,6 +111,65 @@ static inline void stripLsClassifier(std::string &line) {
   }
 }
 
+[[nodiscard]] static int octalDigitValue(char c) { return c - '0'; }
+
+[[nodiscard]] static bool isOctalDigit(char c) { return c >= '0' && c <= '7'; }
+
+[[nodiscard]] static std::string unquoteGitPath(const std::string &path) {
+  if (path.size() < 2 || path.front() != '"' || path.back() != '"')
+    return path;
+
+  std::string result;
+  for (size_t i = 1; i < path.size() - 1; ++i) {
+    char c = path[i];
+    if (c != '\\' || i + 1 >= path.size() - 1) {
+      result += c;
+      continue;
+    }
+
+    char escaped = path[++i];
+    if (isOctalDigit(escaped)) {
+      int value = octalDigitValue(escaped);
+      for (int count = 1;
+           count < 3 && i + 1 < path.size() - 1 && isOctalDigit(path[i + 1]);
+           ++count) {
+        value = value * 8 + octalDigitValue(path[++i]);
+      }
+      result += static_cast<char>(value);
+      continue;
+    }
+
+    switch (escaped) {
+    case 'a':
+      result += '\a';
+      break;
+    case 'b':
+      result += '\b';
+      break;
+    case 'f':
+      result += '\f';
+      break;
+    case 'n':
+      result += '\n';
+      break;
+    case 'r':
+      result += '\r';
+      break;
+    case 't':
+      result += '\t';
+      break;
+    case 'v':
+      result += '\v';
+      break;
+    default:
+      result += escaped;
+      break;
+    }
+  }
+
+  return result;
+}
+
 [[nodiscard]] static std::string parseGitStatusPath(std::string path) {
   static const std::string separator(" -> ");
   rstrip(path);
@@ -119,7 +179,7 @@ static inline void stripLsClassifier(std::string &line) {
     path = path.substr(renameSeparator + separator.size());
   }
 
-  return path;
+  return unquoteGitPath(path);
 }
 
 // FIXME: cleanup somehow
@@ -148,9 +208,45 @@ vimEditCommand(const std::string &path,
   return aliasForCommand(std::to_string(index), command);
 }
 
+[[nodiscard]] static bool isSafeShellWordChar(unsigned char c) {
+  return std::isalnum(c) || c == '_' || c == '-' || c == '.' || c == '/';
+}
+
+[[nodiscard]] static std::string shellEscapeWord(const std::string &word) {
+  if (word.empty())
+    return "''";
+
+  std::string result;
+  for (char c : word) {
+    let unsignedC = static_cast<unsigned char>(c);
+    if (isSafeShellWordChar(unsignedC)) {
+      result += c;
+    } else {
+      result += '\\';
+      result += c;
+    }
+  }
+
+  return result;
+}
+
+[[nodiscard]] static std::string doubleQuoteForShell(const std::string &word) {
+  std::string result("\"");
+  for (char c : word) {
+    if (c == '\\' || c == '"' || c == '$' || c == '`')
+      result += '\\';
+
+    result += c;
+  }
+
+  result += '"';
+  return result;
+}
+
 [[nodiscard]] static std::string
 globalAliasForCommand(int index, const std::string &command) {
-  return "alias -g f" + std::to_string(index) + "=\"" + command + "\"";
+  return "alias -g f" + std::to_string(index) + "=" +
+         doubleQuoteForShell(shellEscapeWord(command));
 }
 
 static void printAliasedLine(int index, std::string line) {
