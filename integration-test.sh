@@ -110,6 +110,8 @@ else
   echo "warning: rg isn't installed" >&2
 fi
 
+repo_root=$(pwd)
+
 if output=$(./build/tag find "baz qux" 2>&1); then
   echo "error: find should have failed" >&2
   exit 1
@@ -125,7 +127,62 @@ if [[ "$(cat /tmp/tag_qf)" != *"README.md:1:1:"* ]]; then
   exit 1
 fi
 
-repo_root=$(pwd)
+if command -v zsh >/dev/null; then
+  space_tmp=$(mktemp -d)
+  (
+    cd "$space_tmp"
+    touch "qg s"
+    SKIP_PIPE_FILTERING=true SHELL=zsh "$repo_root/build/tag" --alias-file "$tmpfile" find . -name "qg s" > /dev/null
+  )
+
+  cat <<'EOF' > "$expected"
+alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
+alias e1="eval '$EDITOR \"./qg s\"'"
+alias -g f1="./qg\\ s"
+EOF
+
+  diff -Nur "$expected" "$tmpfile"
+
+  alias_output=$(zsh -fc 'source "$1"; print_args(){ for arg in "$@"; do print -r -- "[$arg]"; done; }; eval "print_args f1"' zsh "$tmpfile")
+  if [[ "$alias_output" != "[./qg s]" ]]; then
+    echo "error: zsh global alias did not quote path with spaces: $alias_output" >&2
+    exit 1
+  fi
+fi
+
+if command -v zsh >/dev/null; then
+  git_space_tmp=$(mktemp -d)
+  (
+    cd "$git_space_tmp"
+    git init -q
+    touch "qg s"
+    SKIP_PIPE_FILTERING=true SHELL=zsh "$repo_root/build/tag" --alias-file "$tmpfile" git-status > /dev/null
+  )
+
+  cat <<'EOF' > "$expected"
+alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
+alias e1="eval '$EDITOR \"qg s\"'"
+alias -g f1="qg\\ s"
+EOF
+
+  diff -Nur "$expected" "$tmpfile"
+
+  if ! editor_output=$(EDITOR=print_args zsh -fc 'print_args(){ for arg in "$@"; do print -r -- "[$arg]"; done; }; source "$1"; eval "e1"' zsh "$tmpfile"); then
+    echo "error: zsh edit alias for git-status path with spaces failed" >&2
+    exit 1
+  fi
+  if [[ "$editor_output" != "[qg s]" ]]; then
+    echo "error: zsh edit alias did not quote git-status path with spaces: $editor_output" >&2
+    exit 1
+  fi
+
+  alias_output=$(zsh -fc 'source "$1"; print_args(){ for arg in "$@"; do print -r -- "[$arg]"; done; }; eval "print_args f1"' zsh "$tmpfile")
+  if [[ "$alias_output" != "[qg s]" ]]; then
+    echo "error: zsh global alias did not quote git-status path with spaces: $alias_output" >&2
+    exit 1
+  fi
+fi
+
 git_tmp=$(mktemp -d)
 (
   cd "$git_tmp"
