@@ -28,10 +28,10 @@ diff -Nur "$expected" /tmp/tag_aliases
 cat <<'EOF' > "$expected"
 alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '$EDITOR \"README.md\"'"
-alias -g f1="README.md"
+alias -g f1="./README.md"
 alias -g d1="."
 alias e2="eval '$EDITOR \"tag.cpp\"'"
-alias -g f2="tag.cpp"
+alias -g f2="./tag.cpp"
 alias -g d2="."
 EOF
 
@@ -42,10 +42,10 @@ SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" ls LICENS
 cat <<EOF > "$expected"
 alias eall="eval '\$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '\$EDITOR \"LICENSE\"'"
-alias -g f1="LICENSE"
+alias -g f1="./LICENSE"
 alias -g d1="."
 alias e2="eval '\$EDITOR \"README.md\"'"
-alias -g f2="README.md"
+alias -g f2="./README.md"
 alias -g d2="."
 EOF
 
@@ -57,7 +57,7 @@ SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" find .git
 cat <<EOF > "$expected"
 alias eall="eval '\$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '\$EDITOR \".github/workflows/build.yml\"'"
-alias -g f1=".github/workflows/build.yml"
+alias -g f1="./.github/workflows/build.yml"
 alias -g d1=".github/workflows"
 EOF
 diff -Nur "$expected" "$tmpfile"
@@ -65,22 +65,22 @@ diff -Nur "$expected" "$tmpfile"
 cat <<EOF > "$expected"
 alias eall="eval '\$EDITOR -q \\"/tmp/tag_qf\\"'"
 alias e1="eval '\$EDITOR \"README.md\" \"+call cursor(10, 6)\"'"
-alias -g f1="README.md"
+alias -g f1="./README.md"
 alias -g d1="."
 alias e2="eval '\$EDITOR \"README.md\" \"+call cursor(12, 75)\"'"
-alias -g f2="README.md"
+alias -g f2="./README.md"
 alias -g d2="."
 alias e3="eval '\$EDITOR \"README.md\" \"+call cursor(13, 26)\"'"
-alias -g f3="README.md"
+alias -g f3="./README.md"
 alias -g d3="."
 alias e4="eval '\$EDITOR \"README.md\" \"+call cursor(16, 63)\"'"
-alias -g f4="README.md"
+alias -g f4="./README.md"
 alias -g d4="."
 alias e5="eval '\$EDITOR \"README.md\" \"+call cursor(17, 26)\"'"
-alias -g f5="README.md"
+alias -g f5="./README.md"
 alias -g d5="."
 alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(88, 53)\"'"
-alias -g f6="integration-test.sh"
+alias -g f6="./integration-test.sh"
 alias -g d6="."
 EOF
 
@@ -176,14 +176,15 @@ if command -v zsh >/dev/null; then
   (
     cd "$git_space_tmp"
     git init -q
-    touch "qg s"
+    printf '#!/bin/sh\nprintf executable' > "qg s"
+    chmod +x "qg s"
     SKIP_PIPE_FILTERING=true SHELL=zsh "$repo_root/build/tag" --alias-file "$tmpfile" git-status > /dev/null
   )
 
   cat <<'EOF' > "$expected"
 alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '$EDITOR \"qg s\"'"
-alias -g f1="qg\\ s"
+alias -g f1="./qg\\ s"
 alias -g d1="."
 EOF
 
@@ -199,8 +200,14 @@ EOF
   fi
 
   alias_output=$(zsh -fc 'source "$1"; print_args(){ for arg in "$@"; do print -r -- "[$arg]"; done; }; eval "print_args f1"' zsh "$tmpfile")
-  if [[ "$alias_output" != "[qg s]" ]]; then
+  if [[ "$alias_output" != "[./qg s]" ]]; then
     echo "error: zsh global alias did not quote git-status path with spaces: $alias_output" >&2
+    exit 1
+  fi
+
+  executable_output=$(zsh -fc 'cd "$2"; source "$1"; eval f1' zsh "$tmpfile" "$git_space_tmp")
+  if [[ "$executable_output" != "executable" ]]; then
+    echo "error: zsh global alias did not execute a file in the current directory: $executable_output" >&2
     exit 1
   fi
 fi
@@ -224,7 +231,7 @@ git_tmp=$(mktemp -d)
 cat <<'EOF' > "$expected"
 alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '$EDITOR \"bar\"'"
-alias -g f1="bar"
+alias -g f1="./bar"
 alias -g d1="."
 EOF
 

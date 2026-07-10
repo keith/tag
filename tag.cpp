@@ -264,11 +264,18 @@ vimEditCommand(const std::string &path,
   return path.substr(0, directoryEnd + 1);
 }
 
+[[nodiscard]] static std::string executablePath(const std::string &path) {
+  if (path.starts_with('/') || path.starts_with("./"))
+    return path;
+
+  return "./" + path;
+}
+
 static void writeGlobalAliases(std::ostream &os, int index,
                                const std::string &path) {
   let indexString = std::to_string(index);
   os << "alias -g f" << indexString << "="
-     << doubleQuoteForShell(shellEscapeWord(path)) << std::endl;
+     << doubleQuoteForShell(shellEscapeWord(executablePath(path))) << std::endl;
   os << "alias -g d" << indexString << "="
      << doubleQuoteForShell(shellEscapeWord(directoryForPath(path)))
      << std::endl;
