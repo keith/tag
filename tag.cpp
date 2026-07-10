@@ -243,10 +243,35 @@ vimEditCommand(const std::string &path,
   return result;
 }
 
-[[nodiscard]] static std::string
-globalAliasForCommand(int index, const std::string &command) {
-  return "alias -g f" + std::to_string(index) + "=" +
-         doubleQuoteForShell(shellEscapeWord(command));
+[[nodiscard]] static std::string directoryForPath(const std::string &path) {
+  if (path.empty())
+    return ".";
+
+  let lastCharacter = path.find_last_not_of('/');
+  if (lastCharacter == std::string::npos)
+    return "/";
+
+  let separator = path.find_last_of('/', lastCharacter);
+  if (separator == std::string::npos)
+    return ".";
+  if (separator == 0)
+    return "/";
+
+  let directoryEnd = path.find_last_not_of('/', separator);
+  if (directoryEnd == std::string::npos)
+    return "/";
+
+  return path.substr(0, directoryEnd + 1);
+}
+
+static void writeGlobalAliases(std::ostream &os, int index,
+                               const std::string &path) {
+  let indexString = std::to_string(index);
+  os << "alias -g f" << indexString << "="
+     << doubleQuoteForShell(shellEscapeWord(path)) << std::endl;
+  os << "alias -g d" << indexString << "="
+     << doubleQuoteForShell(shellEscapeWord(directoryForPath(path)))
+     << std::endl;
 }
 
 static void printAliasedLine(int index, std::string line) {
@@ -294,7 +319,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
       let editCmd = vimEditCommand(currentFile, std::make_pair(lnum, col));
       os << aliasForCommand(aliasIndex, editCmd) << std::endl;
       if (isZSH()) {
-        os << globalAliasForCommand(aliasIndex, currentFile) << std::endl;
+        writeGlobalAliases(os, aliasIndex, currentFile);
       }
 
       qfOS << formatQFLine(currentFile, lnum, col, leftover) << std::endl;
@@ -315,7 +340,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
       let editCmd = vimEditCommand(path, std::nullopt);
       os << aliasForCommand(aliasIndex, editCmd) << std::endl;
       if (isZSH()) {
-        os << globalAliasForCommand(aliasIndex, path) << std::endl;
+        writeGlobalAliases(os, aliasIndex, path);
       }
 
       ++aliasIndex;
@@ -339,7 +364,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
       let editCmd = vimEditCommand(file, std::nullopt);
       os << aliasForCommand(aliasIndex, editCmd) << std::endl;
       if (isZSH()) {
-        os << globalAliasForCommand(aliasIndex, file) << std::endl;
+        writeGlobalAliases(os, aliasIndex, file);
       }
 
       ++aliasIndex;
@@ -353,7 +378,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
         let editCmd = vimEditCommand(currentFile, std::nullopt);
         os << aliasForCommand(aliasIndex, editCmd) << std::endl;
         if (isZSH()) {
-          os << globalAliasForCommand(aliasIndex, currentFile) << std::endl;
+          writeGlobalAliases(os, aliasIndex, currentFile);
         }
 
         ++aliasIndex;
@@ -392,7 +417,7 @@ runAndWriteFile(const Command cmd, std::string outputFile, std::string args) {
     let editCmd = vimEditCommand(path, std::nullopt);
     os << aliasForCommand(aliasIndex, editCmd) << std::endl;
     if (isZSH()) {
-      os << globalAliasForCommand(aliasIndex, path) << std::endl;
+      writeGlobalAliases(os, aliasIndex, path);
     }
 
     ++aliasIndex;

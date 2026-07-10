@@ -17,6 +17,7 @@ cat <<EOF > "$expected"
 alias eall="eval '\$EDITOR -q \\"/tmp/tag_qf\\"'"
 alias e1="eval '\$EDITOR \\"./README.md\\"'"
 alias -g f1="./README.md"
+alias -g d1="."
 EOF
 
 SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" find . -name "*.md"
@@ -28,8 +29,10 @@ cat <<'EOF' > "$expected"
 alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '$EDITOR \"README.md\"'"
 alias -g f1="README.md"
+alias -g d1="."
 alias e2="eval '$EDITOR \"tag.cpp\"'"
 alias -g f2="tag.cpp"
+alias -g d2="."
 EOF
 
 printf 'README.md\ntag.cpp\n' | SHELL=zsh ./build/tag --alias-file "$tmpfile" > /dev/null
@@ -40,28 +43,45 @@ cat <<EOF > "$expected"
 alias eall="eval '\$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '\$EDITOR \"LICENSE\"'"
 alias -g f1="LICENSE"
+alias -g d1="."
 alias e2="eval '\$EDITOR \"README.md\"'"
 alias -g f2="README.md"
+alias -g d2="."
 EOF
 
 diff -Nur "$expected" "$tmpfile"
 SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" ls -l LICENSE README.md
 diff -Nur "$expected" "$tmpfile"
 
+SKIP_PIPE_FILTERING=true SHELL=zsh ./build/tag --alias-file "$tmpfile" find .github -name build.yml
+cat <<EOF > "$expected"
+alias eall="eval '\$EDITOR -q \"/tmp/tag_qf\"'"
+alias e1="eval '\$EDITOR \".github/workflows/build.yml\"'"
+alias -g f1=".github/workflows/build.yml"
+alias -g d1=".github/workflows"
+EOF
+diff -Nur "$expected" "$tmpfile"
+
 cat <<EOF > "$expected"
 alias eall="eval '\$EDITOR -q \\"/tmp/tag_qf\\"'"
 alias e1="eval '\$EDITOR \"README.md\" \"+call cursor(10, 6)\"'"
 alias -g f1="README.md"
+alias -g d1="."
 alias e2="eval '\$EDITOR \"README.md\" \"+call cursor(12, 75)\"'"
 alias -g f2="README.md"
+alias -g d2="."
 alias e3="eval '\$EDITOR \"README.md\" \"+call cursor(13, 26)\"'"
 alias -g f3="README.md"
+alias -g d3="."
 alias e4="eval '\$EDITOR \"README.md\" \"+call cursor(16, 63)\"'"
 alias -g f4="README.md"
+alias -g d4="."
 alias e5="eval '\$EDITOR \"README.md\" \"+call cursor(17, 26)\"'"
 alias -g f5="README.md"
-alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(68, 53)\"'"
+alias -g d5="."
+alias e6="eval '\$EDITOR \"integration-test.sh\" \"+call cursor(88, 53)\"'"
 alias -g f6="integration-test.sh"
+alias -g d6="."
 EOF
 
 if command -v rg; then
@@ -139,6 +159,7 @@ if command -v zsh >/dev/null; then
 alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '$EDITOR \"./qg s\"'"
 alias -g f1="./qg\\ s"
+alias -g d1="."
 EOF
 
   diff -Nur "$expected" "$tmpfile"
@@ -163,6 +184,7 @@ if command -v zsh >/dev/null; then
 alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '$EDITOR \"qg s\"'"
 alias -g f1="qg\\ s"
+alias -g d1="."
 EOF
 
   diff -Nur "$expected" "$tmpfile"
@@ -203,6 +225,7 @@ cat <<'EOF' > "$expected"
 alias eall="eval '$EDITOR -q \"/tmp/tag_qf\"'"
 alias e1="eval '$EDITOR \"bar\"'"
 alias -g f1="bar"
+alias -g d1="."
 EOF
 
 diff -Nur "$expected" "$tmpfile"
