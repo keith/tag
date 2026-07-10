@@ -83,7 +83,8 @@ fi
 ```
 
 NOTE: With zsh tag also adds `fN` global aliases so you can use `cat f1`
-to print the file containing the first match.
+to print the file containing the first match. It also adds `dN` aliases for
+the matching file's directory, such as `cd d1`.
 
 - `fish - ~/.config/fish/functions/tag.fish`
 
